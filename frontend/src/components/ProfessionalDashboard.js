@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 
 const ProfessionalDashboard = () => {
@@ -43,31 +43,23 @@ const ProfessionalDashboard = () => {
     }
   };
 
-  const exportToExcel = (data, filename) => {
+  const exportToExcel = async (data, filename) => {
     setLoading(true);
     try {
-      const worksheet = XLSX.utils.json_to_sheet(data);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Employees');
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Employees');
       
-      // Auto-size columns
-      const colWidths = [];
-      const range = XLSX.utils.decode_range(worksheet['!ref']);
-      for (let C = range.s.c; C <= range.e.c; ++C) {
-        let maxWidth = 10;
-        for (let R = range.s.r; R <= range.e.r; ++R) {
-          const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
-          const cell = worksheet[cellAddress];
-          if (cell && cell.v) {
-            maxWidth = Math.max(maxWidth, cell.v.toString().length);
-          }
-        }
-        colWidths.push({ width: Math.min(maxWidth + 2, 50) });
+      if (data.length > 0) {
+        worksheet.columns = Object.keys(data[0]).map(key => ({
+          header: key,
+          key,
+          width: Math.min(Math.max(key.length + 5, 15), 50)
+        }));
+        data.forEach(row => worksheet.addRow(row));
       }
-      worksheet['!cols'] = colWidths;
       
-      const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-      const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       saveAs(blob, `${filename}.xlsx`);
     } catch (error) {
       console.error('Export error:', error);
@@ -158,8 +150,8 @@ const ProfessionalDashboard = () => {
   const quickActions = [
     { label: 'Create Employee', path: '/create', icon: '➕', color: '#27ae60' },
     { label: 'Manage IDs', path: '/employees', icon: '👤', color: '#2980b9' },
+    { label: 'Certificates', path: '/certificates', icon: '📜', color: '#16a085' },
     { label: 'Print ID Card', path: '/employees?print=true', icon: '🖨️', color: '#e74c3c' },
-    { label: 'Services', path: '/employees?services=true', icon: '🔧', color: '#f39c12' },
     { label: 'Verify ID', path: '/verify', icon: '✅', color: '#8e44ad' },
     { label: 'Bulk Upload', path: '/bulk-upload', icon: '📤', color: '#d35400' }
   ];

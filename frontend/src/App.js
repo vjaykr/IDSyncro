@@ -6,6 +6,7 @@ import EmployeeList from './components/EmployeeList';
 import EditEmployee from './components/EditEmployee';
 import VerifyID from './components/VerifyID';
 import BulkUpload from './components/BulkUpload';
+import Certificates from './components/Certificates';
 import { ToastProvider } from './components/Toast';
 import './App.css';
 
@@ -39,6 +40,7 @@ function Navigation() {
         <Link to="/" className={isActive('/')} onClick={closeMobileMenu}>Dashboard</Link>
         <Link to="/create" className={isActive('/create')} onClick={closeMobileMenu}>Create ID</Link>
         <Link to="/employees" className={isActive('/employees')} onClick={closeMobileMenu}>Manage IDs</Link>
+        <Link to="/certificates" className={isActive('/certificates')} onClick={closeMobileMenu}>Certificates</Link>
         <Link to="/bulk-upload" className={isActive('/bulk-upload')} onClick={closeMobileMenu}>Bulk Upload</Link>
         <Link to="/verify" className={isActive('/verify')} onClick={closeMobileMenu}>Verify ID</Link>
       </div>
@@ -59,6 +61,7 @@ function App() {
               <Route path="/create" element={<CreateEmployee />} />
               <Route path="/employees" element={<EmployeeList />} />
               <Route path="/edit/:id" element={<EditEmployee />} />
+              <Route path="/certificates/*" element={<Certificates />} />
               <Route path="/bulk-upload" element={<BulkUpload />} />
               <Route path="/verify/:uuid?" element={<VerifyID />} />
             </Routes>

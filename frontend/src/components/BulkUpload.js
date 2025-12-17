@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import { useToast } from './Toast';
 
 const BulkUpload = () => {
@@ -16,14 +16,22 @@ const BulkUpload = () => {
     
     if (selectedFile) {
       const reader = new FileReader();
-      reader.onload = (event) => {
-        const workbook = XLSX.read(event.target.result, { type: 'binary' });
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        const data = XLSX.utils.sheet_to_json(worksheet);
-        setPreview(data.slice(0, 5)); // Show first 5 rows
+      reader.onload = async (event) => {
+        const workbook = new ExcelJS.Workbook();
+        await workbook.xlsx.load(event.target.result);
+        const worksheet = workbook.worksheets[0];
+        const data = [];
+        worksheet.eachRow((row, rowNumber) => {
+          if (rowNumber === 1) return;
+          const rowData = {};
+          worksheet.getRow(1).eachCell((headerCell, colNumber) => {
+            rowData[headerCell.value] = row.getCell(colNumber).value || '';
+          });
+          data.push(rowData);
+        });
+        setPreview(data.slice(0, 5));
       };
-      reader.readAsBinaryString(selectedFile);
+      reader.readAsArrayBuffer(selectedFile);
     }
   };
 
@@ -50,10 +58,19 @@ const BulkUpload = () => {
       }
     ];
     
-    const worksheet = XLSX.utils.json_to_sheet(template);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Template');
-    XLSX.writeFile(workbook, 'employee_template.xlsx');
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Template');
+    worksheet.columns = Object.keys(template[0]).map(key => ({ header: key, key, width: 20 }));
+    template.forEach(row => worksheet.addRow(row));
+    workbook.xlsx.writeBuffer().then(buffer => {
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'employee_template.xlsx';
+      a.click();
+      window.URL.revokeObjectURL(url);
+    });
   };
 
   const handleUpload = async () => {
@@ -74,10 +91,18 @@ const BulkUpload = () => {
     
     reader.onload = async (event) => {
       try {
-        const workbook = XLSX.read(event.target.result, { type: 'binary' });
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        const data = XLSX.utils.sheet_to_json(worksheet);
+        const workbook = new ExcelJS.Workbook();
+        await workbook.xlsx.load(event.target.result);
+        const worksheet = workbook.worksheets[0];
+        const data = [];
+        worksheet.eachRow((row, rowNumber) => {
+          if (rowNumber === 1) return;
+          const rowData = {};
+          worksheet.getRow(1).eachCell((headerCell, colNumber) => {
+            rowData[headerCell.value] = row.getCell(colNumber).value || '';
+          });
+          data.push(rowData);
+        });
 
         const uploadResults = {
           success: 0,
@@ -147,7 +172,7 @@ const BulkUpload = () => {
       }
     };
 
-    reader.readAsBinaryString(file);
+    reader.readAsArrayBuffer(file);
   };
 
   return (
