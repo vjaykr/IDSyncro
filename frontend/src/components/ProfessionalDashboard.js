@@ -140,10 +140,33 @@ const ProfessionalDashboard = () => {
     exportToExcel(summaryData, 'Summary_Report');
   };
 
+  const exportCertificates = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get('http://localhost:5000/api/certificates/export');
+      const certData = response.data.map(cert => ({
+        'Certificate Code': cert.certificate_code,
+        'Name': cert.name,
+        'Certificate Type': cert.certificate_type,
+        'Issue Date': cert.issue_date,
+        'Status': cert.status,
+        'Batch ID': cert.batch_id || 'N/A',
+        'Created At': new Date(cert.created_at).toLocaleDateString()
+      }));
+      exportToExcel(certData, 'Certificates_Report');
+    } catch (error) {
+      console.error('Error exporting certificates:', error);
+      alert('Error exporting certificates');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const bulkActions = [
     { label: 'Export All Data', action: exportAllEmployees, icon: '📊', color: '#2ecc71' },
     { label: 'Employee Report', action: () => exportByType('employee'), icon: '👥', color: '#3498db' },
     { label: 'Intern Report', action: () => exportByType('intern'), icon: '🎓', color: '#9b59b6' },
+    { label: 'Certificates Report', action: exportCertificates, icon: '📜', color: '#16a085' },
     { label: 'Summary Report', action: exportSummaryReport, icon: '📈', color: '#e67e22' }
   ];
 

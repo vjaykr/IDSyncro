@@ -6,6 +6,7 @@ const QRCode = require('qrcode');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
+const crypto = require('crypto');
 
 // Simple logging function
 function log(level, message, data = null) {
@@ -18,6 +19,14 @@ function log(level, message, data = null) {
 }
 
 const { validateEmployeeData, sanitizeEmployeeData } = require('./validationUtils');
+const { 
+  generateCertificateId, 
+  canonicalizeCertificateData, 
+  generateFingerprint, 
+  signFingerprint, 
+  verifySignature 
+} = require('./certificateUtils');
+const xlsx = require('xlsx');
 
 const app = express();
 const PORT = 5000;
@@ -35,6 +44,45 @@ if (!fs.existsSync('uploads')) {
 const db = new sqlite3.Database('idsyncro.db');
 
 db.serialize(() => {
+  // Certificates table
+  db.run(`CREATE TABLE IF NOT EXISTS certificates (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    certificate_uuid TEXT UNIQUE NOT NULL,
+    certificate_code TEXT UNIQUE NOT NULL,
+    person_uuid TEXT NOT NULL,
+    name TEXT NOT NULL,
+    certificate_type TEXT NOT NULL,
+    certificate_data TEXT NOT NULL,
+    fingerprint TEXT NOT NULL,
+    signature TEXT,
+    status TEXT DEFAULT 'active',
+    batch_id TEXT,
+    schema_version INTEGER DEFAULT 1,
+    issue_date TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    created_by TEXT,
+    revoked_at DATETIME,
+    revocation_reason TEXT
+  )`);
+  
+  // Certificate batches table
+  db.run(`CREATE TABLE IF NOT EXISTS certificate_batches (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    batch_id TEXT UNIQUE NOT NULL,
+    certificate_type TEXT NOT NULL,
+    schema TEXT NOT NULL,
+    excel_hash TEXT,
+    certificate_count INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    created_by TEXT
+  )`);
+  
+  // Create indexes for certificates
+  db.run('CREATE INDEX IF NOT EXISTS idx_cert_code ON certificates(certificate_code)');
+  db.run('CREATE INDEX IF NOT EXISTS idx_cert_person_uuid ON certificates(person_uuid)');
+  db.run('CREATE INDEX IF NOT EXISTS idx_cert_status ON certificates(status)');
+  db.run('CREATE INDEX IF NOT EXISTS idx_cert_batch ON certificates(batch_id)');
+  
   db.run(`CREATE TABLE IF NOT EXISTS employees (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     uuid TEXT UNIQUE,
@@ -146,7 +194,7 @@ const storage = multer.diskStorage({
   }
 });
 
-const upload = multer({ 
+const uploadImage = multer({ 
   storage,
   limits: {
     fileSize: 5 * 1024 * 1024 // 5MB limit
@@ -156,6 +204,21 @@ const upload = multer({
       cb(null, true);
     } else {
       cb(new Error('Only image files are allowed'));
+    }
+  }
+});
+
+const uploadExcel = multer({ 
+  storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024 // 10MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || 
+        file.mimetype === 'application/vnd.ms-excel') {
+      cb(null, true);
+    } else {
+      cb(new Error('Only Excel files are allowed'));
     }
   }
 });
@@ -238,7 +301,7 @@ async function generateQRCode(employeeId, uuid) {
 
 // Routes
 app.post('/api/employees', (req, res) => {
-  upload.single('photo')(req, res, async (err) => {
+  uploadImage.single('photo')(req, res, async (err) => {
     if (err) {
       if (err.code === 'LIMIT_FILE_SIZE') {
         return res.status(400).json({ error: 'File too large. Maximum size is 5MB.' });
@@ -357,7 +420,7 @@ app.delete('/api/employees/:id', (req, res) => {
   });
 });
 
-app.put('/api/employees/:id', upload.single('photo'), async (req, res) => {
+app.put('/api/employees/:id', uploadImage.single('photo'), async (req, res) => {
   try {
     const id = parseInt(req.params.id);
     if (!Number.isInteger(id) || id <= 0) {
@@ -889,6 +952,256 @@ app.patch('/api/bulk-type-update', async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
+});
+
+// ============ CERTIFICATE ROUTES ============
+
+// Upload and parse Excel for bulk certificate generation
+app.post('/api/certificates/upload-excel', uploadExcel.single('excel'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+    
+    const workbook = xlsx.readFile(req.file.path);
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[sheetName];
+    const data = xlsx.utils.sheet_to_json(worksheet);
+    
+    // Delete uploaded file
+    fs.unlinkSync(req.file.path);
+    
+    if (data.length === 0) {
+      return res.status(400).json({ error: 'Excel file is empty' });
+    }
+    
+    // Extract column headers
+    const headers = Object.keys(data[0]);
+    
+    // Compute Excel hash for audit
+    const excelHash = crypto.createHash('sha256').update(JSON.stringify(data)).digest('hex');
+    
+    res.json({ 
+      headers, 
+      rowCount: data.length,
+      preview: data.slice(0, 5),
+      excelHash,
+      data
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Create single certificate
+app.post('/api/certificates/create-single', async (req, res) => {
+  try {
+    const { certificateData } = req.body;
+    
+    if (!certificateData || !certificateData.person_uuid || !certificateData.name) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+    
+    const certificateUuid = uuidv4();
+    const certificateCode = generateCertificateId(certificateData.certificate_type || 'intern');
+    const issueDate = new Date().toISOString().split('T')[0];
+    
+    const canonical = canonicalizeCertificateData({
+      ...certificateData,
+      issue_date: issueDate,
+      schema_version: 1
+    });
+    
+    const fingerprint = generateFingerprint(canonical);
+    const signature = crypto.createHash('sha256').update(fingerprint).digest('hex');
+    
+    db.run(
+      `INSERT INTO certificates (
+        certificate_uuid, certificate_code, person_uuid, name, certificate_type,
+        certificate_data, fingerprint, signature, issue_date, schema_version
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        certificateUuid, certificateCode, certificateData.person_uuid, certificateData.name,
+        certificateData.certificate_type || 'Internship', canonical, fingerprint, signature,
+        issueDate, 1
+      ],
+      function(err) {
+        if (err) {
+          return res.status(500).json({ error: err.message });
+        }
+        res.json({ 
+          success: true, 
+          certificateCode,
+          certificateUuid,
+          message: 'Certificate created successfully' 
+        });
+      }
+    );
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Bulk certificate generation
+app.post('/api/certificates/create-bulk', async (req, res) => {
+  try {
+    const { schema, excelData, excelHash } = req.body;
+    
+    if (!schema || !excelData || excelData.length === 0) {
+      return res.status(400).json({ error: 'Invalid request data' });
+    }
+    
+    const batchId = `BATCH-${Date.now()}`;
+    const issueDate = new Date().toISOString().split('T')[0];
+    
+    // Create batch record
+    await new Promise((resolve, reject) => {
+      db.run(
+        `INSERT INTO certificate_batches (batch_id, certificate_type, schema, excel_hash, certificate_count)
+         VALUES (?, ?, ?, ?, ?)`,
+        [batchId, 'Bulk', JSON.stringify(schema), excelHash, excelData.length],
+        (err) => err ? reject(err) : resolve()
+      );
+    });
+    
+    const results = [];
+    
+    for (const row of excelData) {
+      const certificateData = {};
+      
+      // Apply schema to build certificate data
+      for (const field of schema) {
+        if (field.source === 'excel') {
+          certificateData[field.field] = row[field.excel_column];
+        } else if (field.source === 'manual') {
+          certificateData[field.field] = field.value;
+        } else if (field.source === 'auto') {
+          if (field.rule === 'today' || field.rule === 'current_date') {
+            certificateData[field.field] = issueDate;
+          }
+        }
+      }
+      
+      const certificateUuid = uuidv4();
+      const certificateCode = generateCertificateId(certificateData.certificate_type || 'intern');
+      
+      const canonical = canonicalizeCertificateData({
+        ...certificateData,
+        issue_date: issueDate,
+        schema_version: 1
+      });
+      
+      const fingerprint = generateFingerprint(canonical);
+      const signature = crypto.createHash('sha256').update(fingerprint).digest('hex');
+      
+      await new Promise((resolve, reject) => {
+        db.run(
+          `INSERT INTO certificates (
+            certificate_uuid, certificate_code, person_uuid, name, certificate_type,
+            certificate_data, fingerprint, signature, issue_date, batch_id, schema_version
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            certificateUuid, certificateCode, certificateData.person_uuid || certificateUuid,
+            certificateData.name, certificateData.certificate_type || 'Internship',
+            canonical, fingerprint, signature, issueDate, batchId, 1
+          ],
+          (err) => err ? reject(err) : resolve()
+        );
+      });
+      
+      results.push({ certificateCode, name: certificateData.name });
+    }
+    
+    res.json({ 
+      success: true, 
+      batchId,
+      count: results.length,
+      certificates: results.slice(0, 10),
+      message: `Successfully generated ${results.length} certificates` 
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get all certificates
+app.get('/api/certificates', (req, res) => {
+  db.all('SELECT * FROM certificates ORDER BY created_at DESC', (err, rows) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.json(rows);
+  });
+});
+
+// Verify certificate by code or person UUID
+app.get('/api/certificates/verify/:identifier', (req, res) => {
+  const { identifier } = req.params;
+  
+  if (!identifier) {
+    return res.status(400).json({ error: 'Identifier is required' });
+  }
+  
+  // Check if it's a certificate code or person UUID
+  const query = identifier.startsWith('CERT-') 
+    ? 'SELECT * FROM certificates WHERE certificate_code = ? AND status = "active"'
+    : 'SELECT * FROM certificates WHERE person_uuid = ? AND status = "active" ORDER BY created_at DESC';
+  
+  db.all(query, [identifier], (err, rows) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    
+    if (!rows || rows.length === 0) {
+      return res.status(404).json({ error: 'Certificate not found' });
+    }
+    
+    // Return public data only
+    const publicData = rows.map(cert => {
+      const certData = JSON.parse(cert.certificate_data);
+      return {
+        certificate_code: cert.certificate_code,
+        name: cert.name,
+        certificate_type: cert.certificate_type,
+        issue_date: cert.issue_date,
+        status: cert.status,
+        verified: true,
+        ...certData
+      };
+    });
+    
+    res.json(rows.length === 1 ? publicData[0] : publicData);
+  });
+});
+
+// Revoke certificate
+app.post('/api/certificates/revoke/:id', (req, res) => {
+  const { id } = req.params;
+  const { reason } = req.body;
+  
+  db.run(
+    'UPDATE certificates SET status = "revoked", revoked_at = CURRENT_TIMESTAMP, revocation_reason = ? WHERE id = ?',
+    [reason || 'No reason provided', id],
+    function(err) {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      if (this.changes === 0) {
+        return res.status(404).json({ error: 'Certificate not found' });
+      }
+      res.json({ message: 'Certificate revoked successfully' });
+    }
+  );
+});
+
+// Export certificates endpoint
+app.get('/api/certificates/export', (req, res) => {
+  db.all('SELECT * FROM certificates ORDER BY created_at DESC', (err, rows) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.json(rows);
+  });
 });
 
 // Health check endpoint
