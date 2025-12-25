@@ -1142,9 +1142,10 @@ app.post('/api/certificates/create-bulk', async (req, res) => {
     const results = [];
     
     for (const row of excelData) {
-      const certificateData = {};
+      // Start with ALL Excel row data to preserve everything
+      const certificateData = { ...row };
       
-      // Apply schema to build certificate data
+      // Apply schema to override/add structured fields
       for (const field of schema) {
         if (field.source === 'excel') {
           certificateData[field.field] = row[field.excel_column];

@@ -108,7 +108,7 @@ const ManageCertificates = () => {
                   <td style={{ padding: '1rem' }}>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                       <button
-                        onClick={() => window.open(`/verify/${cert.certificate_code}`, '_blank')}
+                        onClick={() => window.open(`/verify/${cert.certificate_code}?type=certificate`, '_blank')}
                         style={{
                           padding: '0.5rem 1rem',
                           background: '#667eea',

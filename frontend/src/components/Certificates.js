@@ -28,15 +28,19 @@ const CertificateHome = () => {
       const workbook = new ExcelJS.Workbook();
       const worksheet = workbook.addWorksheet('Certificates');
       
-      const certData = response.data.map(cert => ({
-        'Certificate Code': cert.certificate_code,
-        'Name': cert.name,
-        'Certificate Type': cert.certificate_type,
-        'Issue Date': cert.issue_date,
-        'Status': cert.status,
-        'Batch ID': cert.batch_id || 'N/A',
-        'Created At': new Date(cert.created_at).toLocaleDateString()
-      }));
+      const certData = response.data.map(cert => {
+        const parsedData = JSON.parse(cert.certificate_data);
+        return {
+          'Certificate Code': cert.certificate_code,
+          'Name': cert.name,
+          'Certificate Type': cert.certificate_type,
+          'Issue Date': cert.issue_date,
+          'Status': cert.status,
+          'Batch ID': cert.batch_id || 'N/A',
+          'Created At': new Date(cert.created_at).toLocaleDateString(),
+          ...parsedData
+        };
+      });
       
       if (certData.length > 0) {
         worksheet.columns = Object.keys(certData[0]).map(key => ({
