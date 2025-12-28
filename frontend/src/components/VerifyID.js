@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
+import { API_BASE_URL } from '../config';
 
 const VerifyID = () => {
   const { uuid } = useParams();
@@ -38,13 +39,13 @@ const VerifyID = () => {
     try {
       let response;
       if (activeTab === 'id') {
-        response = await axios.get(`http://localhost:5000/api/verify/${verifyUuid}`);
+        response = await axios.get(`${API_BASE_URL}/api/verify/${verifyUuid}`);
         setVerificationData({ ...response.data, verificationType: 'id' });
       } else if (activeTab === 'certificate') {
-        response = await axios.get(`http://localhost:5000/api/certificates/verify/${verifyUuid}`);
+        response = await axios.get(`${API_BASE_URL}/api/certificates/verify/${verifyUuid}`);
         setVerificationData({ ...response.data, verificationType: 'certificate' });
       } else if (activeTab === 'offer') {
-        response = await axios.get(`http://localhost:5000/api/offer-letters/verify/${verifyUuid}`);
+        response = await axios.get(`${API_BASE_URL}/api/offer-letters/verify/${verifyUuid}`);
         setVerificationData({ ...response.data, verificationType: 'offer' });
       }
     } catch (error) {

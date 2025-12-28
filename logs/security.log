@@ -5,3 +5,10 @@
 {"error":"Could not connect to any servers in your MongoDB Atlas cluster. One common reason is that you're trying to access the database from an IP that isn't whitelisted. Make sure your current IP address is on your Atlas cluster's IP whitelist: https://www.mongodb.com/docs/atlas/security-whitelist/","level":"error","message":"Failed to initialize MongoDB connection","timestamp":"2025-12-28 22:17:20"}
 {"error":"Could not connect to any servers in your MongoDB Atlas cluster. One common reason is that you're trying to access the database from an IP that isn't whitelisted. Make sure your current IP address is on your Atlas cluster's IP whitelist: https://www.mongodb.com/docs/atlas/security-whitelist/","level":"error","message":"Failed to initialize MongoDB connection","timestamp":"2025-12-28 22:18:19"}
 {"error":"bad auth : authentication failed","level":"error","message":"Failed to initialize MongoDB connection","timestamp":"2025-12-28 22:28:34"}
+{"level":"warn","message":"Default admin credentials are in use. Update ADMIN_EMAIL and ADMIN_PASSWORD in your .env file.","timestamp":"2025-12-28 23:07:15"}
+{"email":"admin@idsyncro.local","level":"warn","message":"Failed login attempt","requestId":"db63ecc6-10c1-44d0-a007-c0124d0197b3","timestamp":"2025-12-28 23:09:19"}
+{"email":"admin@idsyncro.local","level":"warn","message":"Failed login attempt","requestId":"a85eeaf3-9a32-4975-898a-d3cea3e8a527","timestamp":"2025-12-28 23:09:20"}
+{"email":"admin@idsyncro.local","level":"warn","message":"Failed login attempt","requestId":"1b632811-b71a-415f-8190-697164837b31","timestamp":"2025-12-28 23:09:55"}
+{"email":"admin@idsyncro.local","level":"warn","message":"Failed login attempt","requestId":"13030374-0cee-42f6-b15f-726f720f80a4","timestamp":"2025-12-28 23:09:56"}
+{"email":"admin@idsyncro.local","level":"warn","message":"Failed login attempt","requestId":"4b9f6fad-56a7-42e9-ba0a-95d42b2950e6","timestamp":"2025-12-28 23:09:56"}
+{"level":"warn","message":"Default admin credentials are in use. Update ADMIN_EMAIL and ADMIN_PASSWORD in your .env file.","timestamp":"2025-12-28 23:10:37"}

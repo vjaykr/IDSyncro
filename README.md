@@ -70,13 +70,16 @@ A comprehensive web application for organizations to design, issue, and verify I
 3. Configure environment variables:
    - Create a `.env` file in the project root
    - Set `MONGODB_URI` to your MongoDB Atlas connection string
-   - Optionally set `PORT`, `CORS_ORIGIN`, and other overrides referenced in `server.js`
+   - Set `ADMIN_EMAIL` to the email that is allowed to access the admin portal
+    - Set `ADMIN_PASSWORD` to the plaintext password that should unlock the admin portal (change the defaults from `admin@idsyncro.local` / `ChangeMe123!`)
+   - Set `JWT_SECRET` to a long random string used to sign session tokens
+   - Optionally set `JWT_EXPIRY`, `PORT`, `CORS_ORIGIN`, and other overrides referenced in `server.js`
 
 4. Start the backend server:
    ```bash
    npm run dev
    ```
-   Server will run on http://localhost:5000
+      Server will run on http://localhost:5000
 
 ### Frontend Setup
 1. Navigate to frontend directory:
@@ -94,6 +97,14 @@ A comprehensive web application for organizations to design, issue, and verify I
    npm start
    ```
    Frontend will run on http://localhost:3000
+
+### Authentication & Subdomains
+- The admin portal now requires a JWT login. Use the credentials defined by `ADMIN_EMAIL`/`ADMIN_PASSWORD` (defaults are `admin@idsyncro.local` / `ChangeMe123!`, update them in `.env`).
+- Verification endpoints remain public so the `/verify` page and external scanners continue to work without signing in.
+- Plan two deployments if you want branded subdomains:
+   - `id.saralworkstechnologies.info` → full portal (requires login)
+   - `verify.saralworkstechnologies.info` → renders only the Verify page and hides the navigation bar
+- Both subdomains can point to the same backend API; update `REACT_APP_API_URL` in the frontend build if the API is not on `http://localhost:5000`.
 
 ## Usage
 

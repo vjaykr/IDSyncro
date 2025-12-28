@@ -1228,3 +1228,63 @@
 {"duration":"17ms","ip":"::1","level":"info","message":"Request completed","method":"GET","requestId":"f1658e01-9030-425d-afd3-14c174d5200f","status":304,"timestamp":"2025-12-28 22:31:27","url":"/api/employees"}
 {"level":"info","message":"::1 - - [28/Dec/2025:17:01:27 +0000] \"GET /api/employees HTTP/1.1\" 304 - \"http://localhost:3000/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36\"","timestamp":"2025-12-28 22:31:27"}
 {"duration":"13ms","ip":"::1","level":"info","message":"Request completed","method":"GET","requestId":"fe139f98-c163-4632-89a0-05a5c36b7db4","status":304,"timestamp":"2025-12-28 22:31:27","url":"/api/employees"}
+{"level":"info","message":"Attempting MongoDB connection","timestamp":"2025-12-28 22:41:37"}
+{"level":"info","message":"Connected to MongoDB Atlas cluster","timestamp":"2025-12-28 22:41:38"}
+{"level":"info","message":"Server started on port 5000","timestamp":"2025-12-28 22:41:38"}
+{"level":"info","message":"Health check available at http://localhost:5000/api/health","timestamp":"2025-12-28 22:41:38"}
+{"level":"info","message":"::1 - - [28/Dec/2025:17:11:52 +0000] \"GET /api/employees HTTP/1.1\" 304 - \"http://localhost:3000/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36\"","timestamp":"2025-12-28 22:41:52"}
+{"duration":"24ms","ip":"::1","level":"info","message":"Request completed","method":"GET","requestId":"7894b09d-f748-4761-a58d-e1f9e557192d","status":304,"timestamp":"2025-12-28 22:41:52","url":"/api/employees"}
+{"level":"info","message":"::1 - - [28/Dec/2025:17:11:52 +0000] \"GET /api/employees HTTP/1.1\" 304 - \"http://localhost:3000/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36\"","timestamp":"2025-12-28 22:41:52"}
+{"duration":"18ms","ip":"::1","level":"info","message":"Request completed","method":"GET","requestId":"a9cffa0a-b8fd-437d-a7fb-6792fe40182a","status":304,"timestamp":"2025-12-28 22:41:52","url":"/api/employees"}
+{"level":"info","message":"::1 - - [28/Dec/2025:17:11:54 +0000] \"GET /api/employees HTTP/1.1\" 304 - \"http://localhost:3000/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36\"","timestamp":"2025-12-28 22:41:54"}
+{"duration":"14ms","ip":"::1","level":"info","message":"Request completed","method":"GET","requestId":"c20bd076-9cb5-40cc-b295-fab15e25915f","status":304,"timestamp":"2025-12-28 22:41:54","url":"/api/employees"}
+{"level":"info","message":"::1 - - [28/Dec/2025:17:11:54 +0000] \"GET /api/employees HTTP/1.1\" 304 - \"http://localhost:3000/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36\"","timestamp":"2025-12-28 22:41:54"}
+{"duration":"14ms","ip":"::1","level":"info","message":"Request completed","method":"GET","requestId":"d6652d29-bd89-4dea-bf3d-3334bef471d0","status":304,"timestamp":"2025-12-28 22:41:54","url":"/api/employees"}
+{"level":"info","message":"::1 - - [28/Dec/2025:17:11:55 +0000] \"GET /api/employees/1 HTTP/1.1\" 304 - \"http://localhost:3000/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36\"","timestamp":"2025-12-28 22:41:55"}
+{"duration":"15ms","ip":"::1","level":"info","message":"Request completed","method":"GET","requestId":"81c39dc0-51a8-476f-bd02-af03abdaf252","status":304,"timestamp":"2025-12-28 22:41:55","url":"/api/employees/1"}
+{"level":"info","message":"::1 - - [28/Dec/2025:17:11:55 +0000] \"GET /api/employees/1 HTTP/1.1\" 304 - \"http://localhost:3000/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36\"","timestamp":"2025-12-28 22:41:55"}
+{"duration":"15ms","ip":"::1","level":"info","message":"Request completed","method":"GET","requestId":"914496ce-b57f-4922-ad08-c15c4e14b073","status":304,"timestamp":"2025-12-28 22:41:55","url":"/api/employees/1"}
+{"level":"info","message":"::1 - - [28/Dec/2025:17:12:06 +0000] \"GET /api/verify/SWT-25-EMP-0001 HTTP/1.1\" 200 234 \"http://localhost:3000/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36\"","timestamp":"2025-12-28 22:42:06"}
+{"duration":"17ms","ip":"::1","level":"info","message":"Request completed","method":"GET","requestId":"c94320bf-ecf1-4281-8e38-d314e14fa8c0","status":200,"timestamp":"2025-12-28 22:42:06","url":"/api/verify/SWT-25-EMP-0001"}
+{"level":"info","message":"Attempting MongoDB connection","timestamp":"2025-12-28 22:58:36"}
+{"level":"info","message":"Connected to MongoDB Atlas cluster","timestamp":"2025-12-28 22:58:36"}
+{"level":"info","message":"Server started on port 5000","timestamp":"2025-12-28 22:58:36"}
+{"level":"info","message":"Health check available at http://localhost:5000/api/health","timestamp":"2025-12-28 22:58:36"}
+{"level":"warn","message":"Default admin credentials are in use. Update ADMIN_EMAIL and ADMIN_PASSWORD in your .env file.","timestamp":"2025-12-28 23:07:15"}
+{"level":"info","message":"Attempting MongoDB connection","timestamp":"2025-12-28 23:07:15"}
+{"level":"info","message":"Connected to MongoDB Atlas cluster","timestamp":"2025-12-28 23:07:16"}
+{"level":"info","message":"Server started on port 5000","timestamp":"2025-12-28 23:07:16"}
+{"level":"info","message":"Health check available at http://localhost:5000/api/health","timestamp":"2025-12-28 23:07:16"}
+{"email":"admin@idsyncro.local","level":"warn","message":"Failed login attempt","requestId":"db63ecc6-10c1-44d0-a007-c0124d0197b3","timestamp":"2025-12-28 23:09:19"}
+{"level":"info","message":"::1 - - [28/Dec/2025:17:39:19 +0000] \"POST /api/auth/login HTTP/1.1\" 401 31 \"http://localhost:3000/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36\"","timestamp":"2025-12-28 23:09:19"}
+{"duration":"3ms","ip":"::1","level":"info","message":"Request completed","method":"POST","requestId":"db63ecc6-10c1-44d0-a007-c0124d0197b3","status":401,"timestamp":"2025-12-28 23:09:19","url":"/api/auth/login"}
+{"email":"admin@idsyncro.local","level":"warn","message":"Failed login attempt","requestId":"a85eeaf3-9a32-4975-898a-d3cea3e8a527","timestamp":"2025-12-28 23:09:20"}
+{"level":"info","message":"::1 - - [28/Dec/2025:17:39:20 +0000] \"POST /api/auth/login HTTP/1.1\" 401 31 \"http://localhost:3000/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36\"","timestamp":"2025-12-28 23:09:20"}
+{"duration":"1ms","ip":"::1","level":"info","message":"Request completed","method":"POST","requestId":"a85eeaf3-9a32-4975-898a-d3cea3e8a527","status":401,"timestamp":"2025-12-28 23:09:20","url":"/api/auth/login"}
+{"email":"admin@idsyncro.local","level":"warn","message":"Failed login attempt","requestId":"1b632811-b71a-415f-8190-697164837b31","timestamp":"2025-12-28 23:09:55"}
+{"level":"info","message":"::1 - - [28/Dec/2025:17:39:55 +0000] \"POST /api/auth/login HTTP/1.1\" 401 31 \"http://localhost:3000/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36\"","timestamp":"2025-12-28 23:09:55"}
+{"duration":"1ms","ip":"::1","level":"info","message":"Request completed","method":"POST","requestId":"1b632811-b71a-415f-8190-697164837b31","status":401,"timestamp":"2025-12-28 23:09:55","url":"/api/auth/login"}
+{"email":"admin@idsyncro.local","level":"warn","message":"Failed login attempt","requestId":"13030374-0cee-42f6-b15f-726f720f80a4","timestamp":"2025-12-28 23:09:56"}
+{"level":"info","message":"::1 - - [28/Dec/2025:17:39:56 +0000] \"POST /api/auth/login HTTP/1.1\" 401 31 \"http://localhost:3000/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36\"","timestamp":"2025-12-28 23:09:56"}
+{"duration":"1ms","ip":"::1","level":"info","message":"Request completed","method":"POST","requestId":"13030374-0cee-42f6-b15f-726f720f80a4","status":401,"timestamp":"2025-12-28 23:09:56","url":"/api/auth/login"}
+{"email":"admin@idsyncro.local","level":"warn","message":"Failed login attempt","requestId":"4b9f6fad-56a7-42e9-ba0a-95d42b2950e6","timestamp":"2025-12-28 23:09:56"}
+{"level":"info","message":"::1 - - [28/Dec/2025:17:39:56 +0000] \"POST /api/auth/login HTTP/1.1\" 401 31 \"http://localhost:3000/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36\"","timestamp":"2025-12-28 23:09:56"}
+{"duration":"1ms","ip":"::1","level":"info","message":"Request completed","method":"POST","requestId":"4b9f6fad-56a7-42e9-ba0a-95d42b2950e6","status":401,"timestamp":"2025-12-28 23:09:56","url":"/api/auth/login"}
+{"level":"warn","message":"Default admin credentials are in use. Update ADMIN_EMAIL and ADMIN_PASSWORD in your .env file.","timestamp":"2025-12-28 23:10:37"}
+{"level":"info","message":"Attempting MongoDB connection","timestamp":"2025-12-28 23:10:37"}
+{"level":"info","message":"Connected to MongoDB Atlas cluster","timestamp":"2025-12-28 23:10:38"}
+{"level":"info","message":"Server started on port 5000","timestamp":"2025-12-28 23:10:38"}
+{"level":"info","message":"Health check available at http://localhost:5000/api/health","timestamp":"2025-12-28 23:10:38"}
+{"email":"admin@idsyncro.local","level":"info","message":"Admin login successful","requestId":"4d3585de-e9f7-44fd-99ff-a9ccf25ed659","timestamp":"2025-12-28 23:10:55"}
+{"level":"info","message":"::1 - - [28/Dec/2025:17:40:55 +0000] \"POST /api/auth/login HTTP/1.1\" 200 256 \"http://localhost:3000/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36\"","timestamp":"2025-12-28 23:10:55"}
+{"duration":"7ms","ip":"::1","level":"info","message":"Request completed","method":"POST","requestId":"4d3585de-e9f7-44fd-99ff-a9ccf25ed659","status":200,"timestamp":"2025-12-28 23:10:55","url":"/api/auth/login"}
+{"level":"info","message":"::1 - - [28/Dec/2025:17:40:55 +0000] \"GET /api/auth/me HTTP/1.1\" 200 56 \"http://localhost:3000/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36\"","timestamp":"2025-12-28 23:10:55"}
+{"duration":"4ms","ip":"::1","level":"info","message":"Request completed","method":"GET","requestId":"99b333d0-7ff2-4803-b631-a76c00266e53","status":200,"timestamp":"2025-12-28 23:10:55","url":"/api/auth/me"}
+{"level":"info","message":"::1 - - [28/Dec/2025:17:40:55 +0000] \"GET /api/employees HTTP/1.1\" 304 - \"http://localhost:3000/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36\"","timestamp":"2025-12-28 23:10:55"}
+{"duration":"20ms","ip":"::1","level":"info","message":"Request completed","method":"GET","requestId":"79655f8e-164e-4691-a2a8-e363d2fd85bc","status":304,"timestamp":"2025-12-28 23:10:55","url":"/api/employees"}
+{"level":"info","message":"::1 - - [28/Dec/2025:17:40:55 +0000] \"GET /api/employees HTTP/1.1\" 304 - \"http://localhost:3000/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36\"","timestamp":"2025-12-28 23:10:55"}
+{"duration":"14ms","ip":"::1","level":"info","message":"Request completed","method":"GET","requestId":"65b88c0b-a8c9-44fb-9410-07e75f6639d3","status":304,"timestamp":"2025-12-28 23:10:55","url":"/api/employees"}
+{"level":"info","message":"::1 - - [28/Dec/2025:17:41:00 +0000] \"GET /api/employees HTTP/1.1\" 304 - \"http://localhost:3000/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36\"","timestamp":"2025-12-28 23:11:00"}
+{"duration":"15ms","ip":"::1","level":"info","message":"Request completed","method":"GET","requestId":"41ca6c93-c217-4a8b-b29c-debd6d6c5259","status":304,"timestamp":"2025-12-28 23:11:00","url":"/api/employees"}
+{"level":"info","message":"::1 - - [28/Dec/2025:17:41:00 +0000] \"GET /api/employees HTTP/1.1\" 304 - \"http://localhost:3000/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36\"","timestamp":"2025-12-28 23:11:00"}
+{"duration":"15ms","ip":"::1","level":"info","message":"Request completed","method":"GET","requestId":"563656ff-37b6-43ac-b791-5027e94152e2","status":304,"timestamp":"2025-12-28 23:11:00","url":"/api/employees"}

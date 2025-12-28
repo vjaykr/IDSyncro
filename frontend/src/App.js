@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
+import React, { useMemo, useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
 import ProfessionalDashboard from './components/ProfessionalDashboard';
 import CreateEmployee from './components/CreateEmployee';
 import EmployeeList from './components/EmployeeList';
@@ -8,10 +8,13 @@ import VerifyID from './components/VerifyID';
 import BulkUpload from './components/BulkUpload';
 import Certificates from './components/Certificates';
 import OfferLetters from './components/OfferLetters';
+import PrivateRoute from './components/PrivateRoute';
+import Login from './components/Login';
 import { ToastProvider } from './components/Toast';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import './App.css';
 
-function Navigation() {
+function Navigation({ onLogout }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   
@@ -27,6 +30,13 @@ function Navigation() {
     setMobileMenuOpen(false);
   };
   
+  const handleLogout = () => {
+    if (onLogout) {
+      onLogout();
+    }
+    closeMobileMenu();
+  };
+
   return (
     <nav className="navbar">
       <Link to="/" className="nav-brand" onClick={closeMobileMenu}>
@@ -43,32 +53,63 @@ function Navigation() {
         <Link to="/certificates" className={isActive('/certificates')} onClick={closeMobileMenu}>Certificates</Link>
         <Link to="/offer-letters" className={isActive('/offer-letters')} onClick={closeMobileMenu}>Offer Letters</Link>
         <Link to="/verify" className={isActive('/verify')} onClick={closeMobileMenu}>Verify ID</Link>
+        <button type="button" className="logout-button" onClick={handleLogout}>
+          Logout
+        </button>
       </div>
     </nav>
+  );
+}
+
+function AppContent() {
+  const { isAuthenticated, logout } = useAuth();
+  const isVerifyHost = useMemo(() => {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+    return window.location.hostname.startsWith('verify.');
+  }, []);
+
+  return (
+    <div className="App">
+      {!isVerifyHost && isAuthenticated && <Navigation onLogout={logout} />}
+
+      <main className="main-content">
+        <Routes>
+          {isVerifyHost ? (
+            <>
+              <Route path="/" element={<VerifyID />} />
+              <Route path="/verify/:uuid?" element={<VerifyID />} />
+              <Route path="*" element={<Navigate to="/verify" replace />} />
+            </>
+          ) : (
+            <>
+              <Route path="/login" element={<Login />} />
+              <Route path="/verify/:uuid?" element={<VerifyID />} />
+              <Route path="/" element={<PrivateRoute><ProfessionalDashboard /></PrivateRoute>} />
+              <Route path="/create" element={<PrivateRoute><CreateEmployee /></PrivateRoute>} />
+              <Route path="/employees" element={<PrivateRoute><EmployeeList /></PrivateRoute>} />
+              <Route path="/edit/:id" element={<PrivateRoute><EditEmployee /></PrivateRoute>} />
+              <Route path="/certificates/*" element={<PrivateRoute><Certificates /></PrivateRoute>} />
+              <Route path="/offer-letters/*" element={<PrivateRoute><OfferLetters /></PrivateRoute>} />
+              <Route path="/bulk-upload" element={<PrivateRoute><BulkUpload /></PrivateRoute>} />
+              <Route path="*" element={<Navigate to={isAuthenticated ? '/' : '/login'} replace />} />
+            </>
+          )}
+        </Routes>
+      </main>
+    </div>
   );
 }
 
 function App() {
   return (
     <ToastProvider>
-      <Router>
-        <div className="App">
-          <Navigation />
-
-          <main className="main-content">
-            <Routes>
-              <Route path="/" element={<ProfessionalDashboard />} />
-              <Route path="/create" element={<CreateEmployee />} />
-              <Route path="/employees" element={<EmployeeList />} />
-              <Route path="/edit/:id" element={<EditEmployee />} />
-              <Route path="/certificates/*" element={<Certificates />} />
-              <Route path="/offer-letters/*" element={<OfferLetters />} />
-              <Route path="/bulk-upload" element={<BulkUpload />} />
-              <Route path="/verify/:uuid?" element={<VerifyID />} />
-            </Routes>
-          </main>
-        </div>
-      </Router>
+      <AuthProvider>
+        <Router>
+          <AppContent />
+        </Router>
+      </AuthProvider>
     </ToastProvider>
   );
 }

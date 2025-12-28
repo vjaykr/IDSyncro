@@ -11,6 +11,7 @@ const morgan = require('morgan');
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
+const jwt = require('jsonwebtoken');
 const logger = require('./logger');
 const monitoring = require('./monitoring');
 const {
@@ -31,6 +32,22 @@ function log(level, message, data = null) {
   logger[level](logData);
 }
 
+const DEFAULT_ADMIN_EMAIL = 'admin@idsyncro.local';
+const DEFAULT_ADMIN_PASSWORD = 'ChangeMe123!';
+
+const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || DEFAULT_ADMIN_EMAIL).toLowerCase();
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || DEFAULT_ADMIN_PASSWORD;
+const JWT_SECRET = process.env.JWT_SECRET || '';
+const JWT_EXPIRY = process.env.JWT_EXPIRY || '12h';
+
+if (!JWT_SECRET) {
+  logger.warn('JWT_SECRET is not configured. Authentication requests will fail until JWT_SECRET is set.');
+}
+
+if (ADMIN_EMAIL === DEFAULT_ADMIN_EMAIL || ADMIN_PASSWORD === DEFAULT_ADMIN_PASSWORD) {
+  logger.warn('Default admin credentials are in use. Update ADMIN_EMAIL and ADMIN_PASSWORD in your .env file.');
+}
+
 const { validateEmployeeData, sanitizeEmployeeData } = require('./validationUtils');
 const { 
   generateCertificateId, 
@@ -42,12 +59,26 @@ const {
 const xlsx = require('xlsx');
 
 const app = express();
-const PORT = 5000;
+const PORT = parseInt(process.env.PORT, 10) || 5000;
+const DEFAULT_CORS_ORIGINS = [
+  'http://localhost:3000',
+  'https://idsyncro.saralworkstechnologies.info'
+];
+const configuredOrigins = process.env.CORS_ORIGIN || process.env.CORS_ORIGINS;
+const ALLOWED_CORS_ORIGINS = configuredOrigins
+  ? configuredOrigins.split(',').map(origin => origin.trim()).filter(Boolean)
+  : DEFAULT_CORS_ORIGINS;
 
 // Security middleware
 app.use(helmet());
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: (origin, callback) => {
+    if (!origin || ALLOWED_CORS_ORIGINS.includes(origin)) {
+      return callback(null, true);
+    }
+    logger.warn('Blocked CORS origin', { origin });
+    return callback(new Error('Not allowed by CORS'), false);
+  },
   credentials: true
 }));
 
@@ -190,6 +221,71 @@ function getCurrentMonthRange() {
   return { start, end };
 }
 
+const PUBLIC_ROUTE_RULES = [
+  { method: 'ALL', pattern: /^\/api\/verify/ },
+  { method: 'ALL', pattern: /^\/api\/certificates\/verify/ },
+  { method: 'ALL', pattern: /^\/api\/offer-letters\/verify/ },
+  { method: 'GET', pattern: /^\/api\/health/ },
+  { method: 'POST', pattern: /^\/api\/auth\/login$/ }
+];
+
+function routeMatches(rule, req) {
+  if (!rule || !req.path) {
+    return false;
+  }
+  const methodMatches = rule.method === 'ALL' || rule.method === req.method;
+  return methodMatches && rule.pattern.test(req.path);
+}
+
+function isPublicRoute(req) {
+  if (req.method === 'OPTIONS') {
+    return true;
+  }
+  if (req.path && req.path.startsWith('/uploads')) {
+    return true;
+  }
+  return PUBLIC_ROUTE_RULES.some(rule => routeMatches(rule, req));
+}
+
+function extractTokenFromRequest(req) {
+  const header = req.headers?.authorization || '';
+  if (header.startsWith('Bearer ')) {
+    return header.slice(7);
+  }
+  return null;
+}
+
+function authenticateRequest(req, res, next) {
+  if (isPublicRoute(req)) {
+    return next();
+  }
+
+  const token = extractTokenFromRequest(req);
+  if (!token) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+
+  if (!JWT_SECRET) {
+    logger.error('Authentication attempted without JWT_SECRET configured');
+    return res.status(500).json({ error: 'Authentication not configured' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (error) {
+    return res.status(401).json({ error: 'Invalid or expired token' });
+  }
+}
+
+function requireAuth(req, res, next) {
+  if (!req.user) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+  next();
+}
+
 async function getNextEmployeeRowId() {
   return getNextSequenceValue('employees');
 }
@@ -219,6 +315,43 @@ async function generateQRCode(employeeId, uuid) {
   });
   return qrCodeDataUrl;
 }
+
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { email, password } = req.body || {};
+
+    if (!JWT_SECRET) {
+      return res.status(500).json({ error: 'Authentication is not configured on this server' });
+    }
+
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    if (normalizedEmail !== ADMIN_EMAIL || password !== ADMIN_PASSWORD) {
+      logger.warn('Failed login attempt', { email: normalizedEmail, requestId: req.requestId });
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    const token = jwt.sign({ email: ADMIN_EMAIL, role: 'admin' }, JWT_SECRET, { expiresIn: JWT_EXPIRY });
+    logger.info('Admin login successful', { email: ADMIN_EMAIL, requestId: req.requestId });
+
+    res.json({
+      token,
+      user: { email: ADMIN_EMAIL, role: 'admin' }
+    });
+  } catch (error) {
+    logger.error('Login failed', { error: error.message, requestId: req.requestId });
+    res.status(500).json({ error: 'Unable to process login' });
+  }
+});
+
+app.use(authenticateRequest);
+
+app.get('/api/auth/me', requireAuth, (req, res) => {
+  res.json({ user: { email: req.user.email, role: req.user.role || 'admin' } });
+});
 
 // Routes
 app.post('/api/employees', (req, res) => {

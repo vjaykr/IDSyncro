@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useToast } from './Toast';
+import { API_BASE_URL } from '../config';
 
 const VerifyOfferLetter = () => {
   const { showToast } = useToast();
@@ -22,7 +23,7 @@ const VerifyOfferLetter = () => {
     setVerificationResult(null);
 
     try {
-      const response = await axios.get(`http://localhost:5000/api/offer-letters/verify/${offerNumber.trim()}`);
+      const response = await axios.get(`${API_BASE_URL}/api/offer-letters/verify/${offerNumber.trim()}`);
       setVerificationResult(response.data);
       showToast('Offer letter verified successfully!', 'success');
     } catch (error) {
