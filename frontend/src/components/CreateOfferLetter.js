@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useToast } from './Toast';
 
 const CreateOfferLetter = () => {
-  const { showToast } = useToast();
+  const toast = useToast();
   const [formData, setFormData] = useState({
     candidate_name: '',
     company_name: '',
@@ -30,7 +30,7 @@ const CreateOfferLetter = () => {
     e.preventDefault();
     
     if (!formData.candidate_name || !formData.company_name || !formData.designation) {
-      showToast('Please fill in all required fields', 'error');
+      toast.error('Please fill in all required fields');
       return;
     }
     
@@ -41,7 +41,7 @@ const CreateOfferLetter = () => {
       });
       
       setGeneratedOffer(response.data);
-      showToast('Offer letter generated successfully!', 'success');
+      toast.success('Offer letter generated successfully!');
       
       // Reset form
       setFormData({
@@ -57,7 +57,7 @@ const CreateOfferLetter = () => {
         phone: ''
       });
     } catch (error) {
-      showToast(error.response?.data?.error || 'Failed to generate offer letter', 'error');
+      toast.error(error.response?.data?.error || 'Failed to generate offer letter');
     } finally {
       setLoading(false);
     }

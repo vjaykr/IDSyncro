@@ -110,7 +110,18 @@ const VerifyOfferLetter = () => {
               <div className="detail-row">
                 <span className="detail-label">Issue Date:</span>
                 <span className="detail-value">
-                  {new Date(verificationResult.issue_date).toLocaleDateString()}
+                  {verificationResult.issue_date ? 
+                    new Date(verificationResult.issue_date).toLocaleDateString('en-US', { 
+                      year: 'numeric', 
+                      month: 'long', 
+                      day: 'numeric' 
+                    }) : 
+                    new Date(verificationResult.generated_timestamp || verificationResult.generated_at).toLocaleDateString('en-US', { 
+                      year: 'numeric', 
+                      month: 'long', 
+                      day: 'numeric' 
+                    })
+                  }
                 </span>
               </div>
 
@@ -123,7 +134,7 @@ const VerifyOfferLetter = () => {
             </div>
 
             <div className="verification-badge">
-              <p>✓ This offer letter is authentic and verified</p>
+              <p>✓ This offer letter is authentic and verified by IDSyncro System</p>
             </div>
           </div>
         )}

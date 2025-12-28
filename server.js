@@ -1415,6 +1415,8 @@ app.get('/api/offer-letters/staging', (req, res) => {
 // Generate offer letters from staging
 app.post('/api/offer-letters/generate', async (req, res) => {
   try {
+    const { issueDate, validityDays, offerType } = req.body;
+    
     const stagingData = await new Promise((resolve, reject) => {
       db.all('SELECT * FROM offer_letters_staging ORDER BY row_number', (err, rows) => {
         if (err) reject(err);
@@ -1428,6 +1430,15 @@ app.post('/api/offer-letters/generate', async (req, res) => {
     
     const batchId = `BATCH-OL-${Date.now()}`;
     const generatedTimestamp = new Date().toISOString();
+    const offerIssueDate = issueDate || new Date().toISOString().split('T')[0];
+    const validity = validityDays || 15;
+    const type = offerType || 'Full-time';
+    
+    // Calculate validity date
+    const validityDate = new Date(offerIssueDate);
+    validityDate.setDate(validityDate.getDate() + validity);
+    const validUntil = validityDate.toISOString().split('T')[0];
+    
     const results = [];
     
     // Start transaction
@@ -1457,9 +1468,20 @@ app.post('/api/offer-letters/generate', async (req, res) => {
         );
       });
       
-      // Generate offer letters with unique numbers
+      // Generate offer letters with unique numbers and custom settings
       for (const staged of stagingData) {
         const offerLetterNumber = generateOfferLetterNumber();
+        const excelData = JSON.parse(staged.excel_data);
+        
+        // Merge Excel data with generation settings
+        const enrichedData = {
+          ...excelData,
+          issue_date: offerIssueDate,
+          validity_days: validity,
+          valid_until: validUntil,
+          offer_type: type,
+          generated_at: generatedTimestamp
+        };
         
         await new Promise((resolve, reject) => {
           db.run(
@@ -1469,7 +1491,7 @@ app.post('/api/offer-letters/generate', async (req, res) => {
              VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
             [
               offerLetterNumber,
-              staged.excel_data,
+              JSON.stringify(enrichedData),
               batchId,
               staged.excel_filename,
               staged.excel_hash,
@@ -1505,6 +1527,7 @@ app.post('/api/offer-letters/generate', async (req, res) => {
         batchId,
         count: results.length,
         offerLetters: results,
+        settings: { issueDate: offerIssueDate, validityDays: validity, validUntil, offerType: type },
         message: `Successfully generated ${results.length} offer letters`
       });
     } catch (error) {
@@ -1594,7 +1617,7 @@ app.get('/api/offer-letters/verify/:offerNumber', (req, res) => {
         company_name: offerData.company_name || offerData.Company || offerData['Company Name'] || 'N/A',
         designation: offerData.designation || offerData.Designation || 'N/A',
         validity_period: offerData.validity_period || offerData['Validity Period'] || 'N/A',
-        issue_date: row.generated_timestamp,
+        issue_date: offerData.issue_date || row.generated_timestamp,
         status: row.status,
         verified: true
       };

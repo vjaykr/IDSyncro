@@ -578,7 +578,7 @@ const VerifyID = () => {
                         VERIFIED BY
                       </div>
                       <div style={{ fontSize: '1rem', fontWeight: '600', color: '#111827' }}>
-                        ISO 9001:2015 System
+                        IDSyncro System
                       </div>
                     </div>
                   </div>

@@ -3,12 +3,17 @@ import axios from 'axios';
 import { useToast } from './Toast';
 
 const BulkOfferLetter = () => {
-  const { showToast } = useToast();
+  const toast = useToast();
   const [file, setFile] = useState(null);
   const [uploadData, setUploadData] = useState(null);
   const [stagedData, setStagedData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [generationResult, setGenerationResult] = useState(null);
+  const [generationSettings, setGenerationSettings] = useState({
+    issueDate: new Date().toISOString().split('T')[0],
+    validityDays: 15,
+    offerType: 'Full-time'
+  });
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
@@ -18,7 +23,7 @@ const BulkOfferLetter = () => {
 
   const handleUpload = async () => {
     if (!file) {
-      showToast('Please select an Excel file', 'error');
+      toast.error('Please select an Excel file');
       return;
     }
 
@@ -32,10 +37,10 @@ const BulkOfferLetter = () => {
       });
 
       setUploadData(response.data);
-      showToast(`Successfully imported ${response.data.rowCount} records`, 'success');
+      toast.success(`Successfully imported ${response.data.rowCount} records`);
       fetchStagedData();
     } catch (error) {
-      showToast(error.response?.data?.error || 'Failed to upload file', 'error');
+      toast.error(error.response?.data?.error || 'Failed to upload file');
     } finally {
       setLoading(false);
     }
@@ -52,20 +57,20 @@ const BulkOfferLetter = () => {
 
   const handleGenerate = async () => {
     if (stagedData.length === 0) {
-      showToast('No staged data to generate', 'error');
+      toast.error('No staged data to generate');
       return;
     }
 
     setLoading(true);
     try {
-      const response = await axios.post('http://localhost:5000/api/offer-letters/generate');
+      const response = await axios.post('http://localhost:5000/api/offer-letters/generate', generationSettings);
       setGenerationResult(response.data);
-      showToast(response.data.message, 'success');
+      toast.success(response.data.message);
       setStagedData([]);
       setUploadData(null);
       setFile(null);
     } catch (error) {
-      showToast(error.response?.data?.error || 'Failed to generate offer letters', 'error');
+      toast.error(error.response?.data?.error || 'Failed to generate offer letters');
     } finally {
       setLoading(false);
     }
@@ -143,8 +148,44 @@ const BulkOfferLetter = () => {
           <div className="staged-section">
             <h3>📋 Staged Data ({stagedData.length} records)</h3>
             <p className="warning-text">
-              ⚠️ No offer letter numbers have been generated yet. Click "Generate Offer Letters" to create them.
+              ⚠️ No offer letter numbers have been generated yet. Configure settings and click "Generate Offer Letters".
             </p>
+
+            <div className="generation-settings">
+              <h4>⚙️ Generation Settings</h4>
+              <div className="settings-grid">
+                <div className="setting-field">
+                  <label>Issue Date</label>
+                  <input
+                    type="date"
+                    value={generationSettings.issueDate}
+                    onChange={(e) => setGenerationSettings({...generationSettings, issueDate: e.target.value})}
+                  />
+                </div>
+                <div className="setting-field">
+                  <label>Validity Period (Days)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="90"
+                    value={generationSettings.validityDays}
+                    onChange={(e) => setGenerationSettings({...generationSettings, validityDays: parseInt(e.target.value)})}
+                  />
+                </div>
+                <div className="setting-field">
+                  <label>Offer Type</label>
+                  <select
+                    value={generationSettings.offerType}
+                    onChange={(e) => setGenerationSettings({...generationSettings, offerType: e.target.value})}
+                  >
+                    <option value="Full-time">Full-time</option>
+                    <option value="Part-time">Part-time</option>
+                    <option value="Contract">Contract</option>
+                    <option value="Internship">Internship</option>
+                  </select>
+                </div>
+              </div>
+            </div>
 
             <button
               onClick={handleGenerate}
