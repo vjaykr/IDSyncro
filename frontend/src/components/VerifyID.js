@@ -101,6 +101,8 @@ const VerifyID = () => {
     );
   };
 
+  const isVerifyHost = typeof window !== 'undefined' && window.location.hostname.startsWith('verify.');
+
   return (
     <div style={{ 
       minHeight: '100vh', 
@@ -158,26 +160,28 @@ const VerifyID = () => {
             </div>
           </div>
           
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button
-              onClick={() => window.location.href = '/'}
-              style={{
-                padding: '0.5rem 1rem',
-                border: '1px solid #D1D5DB',
-                borderRadius: '8px',
-                backgroundColor: 'white',
-                color: '#4B5563',
-                fontSize: '0.875rem',
-                fontWeight: '500',
-                cursor: 'pointer',
-                transition: 'all 0.2s'
-              }}
-              onMouseOver={(e) => e.target.style.backgroundColor = '#F9FAFB'}
-              onMouseOut={(e) => e.target.style.backgroundColor = 'white'}
-            >
-              Back to Home
-            </button>
-          </div>
+          {!isVerifyHost && (
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button
+                onClick={() => window.location.href = '/'}
+                style={{
+                  padding: '0.5rem 1rem',
+                  border: '1px solid #D1D5DB',
+                  borderRadius: '8px',
+                  backgroundColor: 'white',
+                  color: '#4B5563',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+                onMouseOver={(e) => e.target.style.backgroundColor = '#F9FAFB'}
+                onMouseOut={(e) => e.target.style.backgroundColor = 'white'}
+              >
+                Back to Home
+              </button>
+            </div>
+          )}
         </div>
       </header>
 
