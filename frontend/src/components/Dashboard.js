@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import { buildVerifyPortalUrl } from '../config';
 
 const Dashboard = () => {
   const [stats, setStats] = useState({
@@ -52,7 +53,14 @@ const Dashboard = () => {
         <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
           <Link to="/create" className="btn btn-primary">Create New ID</Link>
           <Link to="/employees" className="btn btn-secondary">Manage IDs</Link>
-          <Link to="/verify" className="btn btn-secondary">Verify ID</Link>
+          <a
+            href={buildVerifyPortalUrl('/verify')}
+            className="btn btn-secondary"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Verify ID
+          </a>
         </div>
       </div>
     </div>

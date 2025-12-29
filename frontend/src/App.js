@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
 import ProfessionalDashboard from './components/ProfessionalDashboard';
 import CreateEmployee from './components/CreateEmployee';
@@ -12,11 +12,13 @@ import PrivateRoute from './components/PrivateRoute';
 import Login from './components/Login';
 import { ToastProvider } from './components/Toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { buildVerifyPortalUrl } from './config';
 import './App.css';
 
 function Navigation({ onLogout }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const verifyPortalUrl = buildVerifyPortalUrl('/verify');
   
   const isActive = (path) => {
     return location.pathname === path ? 'active' : '';
@@ -52,12 +54,37 @@ function Navigation({ onLogout }) {
         <Link to="/employees" className={isActive('/employees')} onClick={closeMobileMenu}>Manage IDs</Link>
         <Link to="/certificates" className={isActive('/certificates')} onClick={closeMobileMenu}>Certificates</Link>
         <Link to="/offer-letters" className={isActive('/offer-letters')} onClick={closeMobileMenu}>Offer Letters</Link>
-        <Link to="/verify" className={isActive('/verify')} onClick={closeMobileMenu}>Verify ID</Link>
+        <a
+          href={verifyPortalUrl}
+          className={isActive('/verify')}
+          onClick={closeMobileMenu}
+          target="_blank"
+          rel="noreferrer"
+        >
+          Verify ID
+        </a>
         <button type="button" className="logout-button" onClick={handleLogout}>
           Logout
         </button>
       </div>
     </nav>
+  );
+}
+function VerifyPortalRedirect() {
+  const location = useLocation();
+
+  useEffect(() => {
+    const targetPath = location.pathname.startsWith('/verify') ? location.pathname : '/verify';
+    const targetUrl = buildVerifyPortalUrl(`${targetPath}${location.search || ''}${location.hash || ''}`);
+    if (typeof window !== 'undefined' && window.location.href !== targetUrl) {
+      window.location.replace(targetUrl);
+    }
+  }, [location]);
+
+  return (
+    <div className="verify-redirect" style={{ padding: '2rem', textAlign: 'center' }}>
+      Redirecting to secure verification portal...
+    </div>
   );
 }
 
@@ -79,13 +106,14 @@ function AppContent() {
           {isVerifyHost ? (
             <>
               <Route path="/" element={<VerifyID />} />
+              <Route path="/verify" element={<VerifyID />} />
               <Route path="/verify/:uuid?" element={<VerifyID />} />
               <Route path="*" element={<Navigate to="/verify" replace />} />
             </>
           ) : (
             <>
               <Route path="/login" element={<Login />} />
-              <Route path="/verify/:uuid?" element={<VerifyID />} />
+              <Route path="/verify/*" element={<VerifyPortalRedirect />} />
               <Route path="/" element={<PrivateRoute><ProfessionalDashboard /></PrivateRoute>} />
               <Route path="/create" element={<PrivateRoute><CreateEmployee /></PrivateRoute>} />
               <Route path="/employees" element={<PrivateRoute><EmployeeList /></PrivateRoute>} />

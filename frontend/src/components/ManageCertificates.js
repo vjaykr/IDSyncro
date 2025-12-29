@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { buildVerifyPortalUrl } from '../config';
 
 const ManageCertificates = () => {
   const [certificates, setCertificates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
+  const openVerifyPortal = (code) => {
+    const url = buildVerifyPortalUrl(`/verify/${code}?type=certificate`);
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
 
   useEffect(() => {
     fetchCertificates();
@@ -108,7 +113,7 @@ const ManageCertificates = () => {
                   <td style={{ padding: '1rem' }}>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                       <button
-                        onClick={() => window.open(`/verify/${cert.certificate_code}?type=certificate`, '_blank')}
+                        onClick={() => openVerifyPortal(cert.certificate_code)}
                         style={{
                           padding: '0.5rem 1rem',
                           background: '#667eea',

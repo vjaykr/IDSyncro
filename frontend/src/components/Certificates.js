@@ -6,6 +6,7 @@ import { saveAs } from 'file-saver';
 import CreateCertificate from './CreateCertificate';
 import BulkCertificate from './BulkCertificate';
 import ManageCertificates from './ManageCertificates';
+import { buildVerifyPortalUrl } from '../config';
 
 const Certificates = () => {
   return (
@@ -20,6 +21,7 @@ const Certificates = () => {
 
 const CertificateHome = () => {
   const [loading, setLoading] = useState(false);
+  const verifyCertificateUrl = buildVerifyPortalUrl('/verify?type=certificate');
 
   const exportCertificates = async () => {
     setLoading(true);
@@ -87,11 +89,16 @@ const CertificateHome = () => {
           <p>View and manage all certificates</p>
         </Link>
 
-        <Link to="/verify" className="cert-action-card">
+        <a
+          href={verifyCertificateUrl}
+          className="cert-action-card"
+          target="_blank"
+          rel="noreferrer"
+        >
           <div className="cert-icon">✅</div>
           <h3>Verify Certificate</h3>
           <p>Verify certificate authenticity</p>
-        </Link>
+        </a>
 
         <button onClick={exportCertificates} className="cert-action-card" style={{ border: 'none', cursor: 'pointer' }} disabled={loading}>
           <div className="cert-icon">📥</div>

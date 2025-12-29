@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import IDCardViewer from './IDCardViewer';
 import { useToast } from './Toast';
-import { buildApiUrl, UPLOADS_BASE_URL } from '../config';
+import { buildApiUrl, UPLOADS_BASE_URL, buildVerifyPortalUrl } from '../config';
 
 // Load jsPDF
 if (typeof window !== 'undefined' && !window.jspdf) {
@@ -34,6 +34,13 @@ const EmployeeList = () => {
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [newType, setNewType] = useState('employee');
   const [showTypeModal, setShowTypeModal] = useState(false);
+    const openVerifyPortal = (identifier) => {
+      if (!identifier) {
+        return;
+      }
+      const url = buildVerifyPortalUrl(`/verify/${identifier}`);
+      window.open(url, '_blank', 'noopener,noreferrer');
+    };
   const [advancedFilters, setAdvancedFilters] = useState({
     bloodGroup: 'all',
     joiningDateFrom: '',
@@ -1013,9 +1020,7 @@ const EmployeeList = () => {
                   <span>Edit Employee</span>
                 </Link>
                 <button 
-                  onClick={() => {
-                    window.open(`/verify/${selectedEmployee.uuid}`, '_blank');
-                  }}
+                  onClick={() => openVerifyPortal(selectedEmployee.uuid)}
                   className="action-btn secondary"
                 >
                   <span className="btn-icon">✅</span>

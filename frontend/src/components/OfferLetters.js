@@ -3,6 +3,7 @@ import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import CreateOfferLetter from './CreateOfferLetter';
 import BulkOfferLetter from './BulkOfferLetter';
 import ManageOfferLetters from './ManageOfferLetters';
+import { buildVerifyPortalUrl } from '../config';
 
 const OfferLetters = () => {
   const location = useLocation();
@@ -28,9 +29,14 @@ const OfferLetters = () => {
         <Link to="/offer-letters/manage" className={isActive('/offer-letters/manage')}>
           📋 Manage
         </Link>
-        <Link to="/verify?type=offer" className="tab-link">
+        <a
+          href={buildVerifyPortalUrl('/verify?type=offer')}
+          className="tab-link"
+          target="_blank"
+          rel="noreferrer"
+        >
           ✅ Verify
-        </Link>
+        </a>
       </div>
       
       <Routes>

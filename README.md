@@ -74,6 +74,7 @@ A comprehensive web application for organizations to design, issue, and verify I
     - Set `ADMIN_PASSWORD` to the plaintext password that should unlock the admin portal (change the defaults from `admin@idsyncro.local` / `ChangeMe123!`)
    - Set `JWT_SECRET` to a long random string used to sign session tokens
    - Optionally set `JWT_EXPIRY`, `PORT`, `CORS_ORIGIN`, and other overrides referenced in `server.js`
+   - Set `VERIFY_PORTAL_BASE_URL` to the fully qualified verification portal domain (e.g., `https://verify.saralworkstechnologies.info`) so generated QR codes and email links always target the public site
 
 4. Start the backend server:
    ```bash
@@ -92,7 +93,11 @@ A comprehensive web application for organizations to design, issue, and verify I
    npm install
    ```
 
-3. Start the React development server:
+3. Configure the frontend environment variables:
+   - Update `frontend/.env` (or copy from `.env.example` if you keep one) so `REACT_APP_API_BASE_URL` targets your API gateway
+   - Set `REACT_APP_VERIFY_PORTAL_URL` to `https://verify.saralworkstechnologies.info` in production; use `http://localhost:9090` when testing locally so redirects stay on your dev box
+
+4. Start the React development server:
    ```bash
    npm start
    ```
@@ -104,7 +109,8 @@ A comprehensive web application for organizations to design, issue, and verify I
 - Plan two deployments if you want branded subdomains:
    - `id.saralworkstechnologies.info` → full portal (requires login)
    - `verify.saralworkstechnologies.info` → renders only the Verify page and hides the navigation bar
-- Both subdomains can point to the same backend API; update `REACT_APP_API_URL` in the frontend build if the API is not on `http://localhost:9091`.
+- The React SPA now forces any `/verify` navigation on the admin host to `https://verify.saralworkstechnologies.info`, ensuring the verification UI is only accessible on that dedicated domain.
+- Both subdomains can point to the same backend API; update `REACT_APP_API_BASE_URL` in the frontend build if the API is not on `http://localhost:9091`.
 
 ## Usage
 
@@ -140,7 +146,7 @@ A comprehensive web application for organizations to design, issue, and verify I
 5. View batch statistics
 
 ### Verifying Offer Letters
-1. Go to "Verify ID" page (http://localhost:9090/verify)
+1. Go to "Verify ID" page (`https://verify.saralworkstechnologies.info/verify` in production or `http://localhost:9090/verify` locally)
 2. Select "Offer Letter" tab
 3. Enter offer letter number
 4. View public information (company, designation, validity)
@@ -198,7 +204,7 @@ A comprehensive web application for organizations to design, issue, and verify I
 ## QR Code Integration
 
 Each ID includes a QR code that contains:
-- Verification URL: `http://localhost:9090/verify/{UUID}`
+- Verification URL: `https://verify.saralworkstechnologies.info/verify/{UUID}` (use `http://localhost:9090/verify/{UUID}` during local development)
 - Direct access to verification page
 - Real-time status checking
 

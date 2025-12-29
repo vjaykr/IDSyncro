@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
+import { buildVerifyPortalUrl } from '../config';
 
 const ProfessionalDashboard = () => {
   const [stats, setStats] = useState({
@@ -195,7 +196,7 @@ const ProfessionalDashboard = () => {
     { label: 'Certificates', path: '/certificates', icon: '📜', color: '#16a085' },
     { label: 'Offer Letters', path: '/offer-letters', icon: '📄', color: '#f39c12' },
     { label: 'Print ID Card', path: '/employees?print=true', icon: '🖨️', color: '#e74c3c' },
-    { label: 'Verify ID', path: '/verify', icon: '✅', color: '#8e44ad' },
+    { label: 'Verify ID', externalUrl: buildVerifyPortalUrl('/verify'), icon: '✅', color: '#8e44ad' },
     { label: 'Bulk Upload', path: '/bulk-upload', icon: '📤', color: '#d35400' }
   ];
 
@@ -253,22 +254,45 @@ const ProfessionalDashboard = () => {
       <div className="action-section">
         <h2>🚀 Quick Actions</h2>
         <div className="action-grid">
-          {quickActions.map((action, index) => (
-            <Link 
-              key={index} 
-              to={action.path} 
-              className="action-card"
-              style={{ borderLeft: `4px solid ${action.color}` }}
-            >
-              <div className="action-icon" style={{ color: action.color }}>
-                {action.icon}
-              </div>
-              <div className="action-content">
-                <h3>{action.label}</h3>
-                <p>Click to {action.label.toLowerCase()}</p>
-              </div>
-            </Link>
-          ))}
+          {quickActions.map((action, index) => {
+            const cardContent = (
+              <>
+                <div className="action-icon" style={{ color: action.color }}>
+                  {action.icon}
+                </div>
+                <div className="action-content">
+                  <h3>{action.label}</h3>
+                  <p>Click to {action.label.toLowerCase()}</p>
+                </div>
+              </>
+            );
+
+            if (action.externalUrl) {
+              return (
+                <a
+                  key={index}
+                  href={action.externalUrl}
+                  className="action-card"
+                  style={{ borderLeft: `4px solid ${action.color}` }}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {cardContent}
+                </a>
+              );
+            }
+
+            return (
+              <Link
+                key={index}
+                to={action.path}
+                className="action-card"
+                style={{ borderLeft: `4px solid ${action.color}` }}
+              >
+                {cardContent}
+              </Link>
+            );
+          })}
         </div>
       </div>
 
